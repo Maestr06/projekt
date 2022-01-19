@@ -176,8 +176,6 @@ static void next_page(GtkWidget *widget, gpointer data)
         sprintf(hp1, "%d", list[iter].hp);
         sprintf(amount1, "%d", list[iter].amount);
 
-        g_print("%s;%s;%s;%s;%s;%s;\n", list[iter].brand, list[iter].model, list[iter].color, price1, hp1, amount1);
-
         gtk_entry_set_text(GTK_ENTRY(b), list[iter].brand);
         gtk_entry_set_text(GTK_ENTRY(m), list[iter].model);
         gtk_entry_set_text(GTK_ENTRY(c), list[iter].color);
@@ -215,8 +213,6 @@ static void prev_page(GtkWidget *widget, gpointer data)
         sprintf(price1, "%d", list[iter].price);
         sprintf(hp1, "%d", list[iter].hp);
         sprintf(amount1, "%d", list[iter].amount);
-
-        g_print("%s;%s;%s;%s;%s;%s;\n", list[iter].brand, list[iter].model, list[iter].color, price1, hp1, amount1);
 
         gtk_entry_set_text(GTK_ENTRY(b), list[iter].brand);
         gtk_entry_set_text(GTK_ENTRY(m), list[iter].model);
@@ -286,19 +282,20 @@ static void delete_car(GtkWidget *widget, gpointer data)
     sprintf(hp1, "%d", warehouse[0].hp);
     sprintf(amount1, "%d", warehouse[0].amount);
 
-    g_print("%s;%s;%s;%s;%s;%s;\n", warehouse[0].brand, warehouse[0].model, warehouse[0].color, price1, hp1, amount1);
-
     gtk_entry_set_text(GTK_ENTRY(b), "");
     gtk_entry_set_text(GTK_ENTRY(m), "");
     gtk_entry_set_text(GTK_ENTRY(c), "");
     gtk_entry_set_text(GTK_ENTRY(p), "1000");
     gtk_entry_set_text(GTK_ENTRY(h), "10");
     gtk_entry_set_text(GTK_ENTRY(a), "1");
+    iter = 0;
+    count = 0;
 }
 
 static void find_car(GtkWidget *widget, gpointer data)
 {
     memset(list, 0, sizeof(list));
+    iter = 0;
     count = 0;
     Entries *d = data;
     GtkWidget *b = d->brand;
