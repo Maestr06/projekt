@@ -31,6 +31,8 @@ struct car list[SIZE];
 
 static bool load_cars_from_file(const char *filename, struct car *warehouse);
 
+static bool write_cars_to_file(const char *filename, struct car *warehouse);
+
 static void my_split(const char *source, char *brand, char *model, char *color, char *price, char *hp, char *amount);
 
 static void make_pages(GtkWidget *notebook, GtkWidget *grid, GtkWidget *name, GtkWidget **brand, GtkWidget **model, GtkWidget **color, GtkWidget **price, GtkWidget **hp, GtkWidget **amount);
@@ -42,9 +44,12 @@ static void PageSwitch(GtkWidget *widget, GtkNotebookTab *page, gint page_num)
 
 static void add_car(GtkWidget *widget, gpointer data);
 
-static bool car_exists(const char *brand, const char *model, const char *color);
+static bool car_exists(const char *brand, const char *model,
+                       const char *color, const char *price, const char *hp);
 
 static void find_car(GtkWidget *widget, gpointer data);
+
+static void delete_car(GtkWidget *widget, gpointer data);
 
 static void next_page(GtkWidget *widget, gpointer data);
 
@@ -114,6 +119,7 @@ static void activate(GtkApplication *app, gpointer user_data)
     gtk_grid_attach(GTK_GRID(grid), button, 0, 8, 1, 1);
 
     button = gtk_button_new_with_label("Delete current");
+    g_signal_connect(button, "clicked", G_CALLBACK(delete_car), find_data);
     gtk_grid_attach(GTK_GRID(grid), button, 1, 8, 1, 1);
 
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), 1);
@@ -145,10 +151,12 @@ static void next_page(GtkWidget *widget, gpointer data)
 {
     if (count > 1)
     {
-        if (iter == count - 1) {
+        if (iter == count - 1)
+        {
             iter = 0;
         }
-        else {
+        else
+        {
             iter++;
         }
         Entries *d = data;
@@ -183,10 +191,12 @@ static void prev_page(GtkWidget *widget, gpointer data)
 {
     if (count > 1)
     {
-        if (iter == 0) {
+        if (iter == 0)
+        {
             iter = count - 1;
         }
-        else {
+        else
+        {
             iter--;
         }
         Entries *d = data;
@@ -215,6 +225,75 @@ static void prev_page(GtkWidget *widget, gpointer data)
         gtk_entry_set_text(GTK_ENTRY(h), hp1);
         gtk_entry_set_text(GTK_ENTRY(a), amount1);
     }
+}
+
+static void delete_car(GtkWidget *widget, gpointer data)
+{
+    Entries *d = data;
+    GtkWidget *b = d->brand;
+    GtkWidget *m = d->model;
+    GtkWidget *c = d->color;
+    GtkWidget *p = d->price;
+    GtkWidget *h = d->hp;
+    GtkWidget *a = d->amount;
+
+    const gchar *brand, *model, *color, *price, *hp, *amount;
+    brand = gtk_entry_get_text(GTK_ENTRY(b));
+    model = gtk_entry_get_text(GTK_ENTRY(m));
+    color = gtk_entry_get_text(GTK_ENTRY(c));
+    price = gtk_entry_get_text(GTK_ENTRY(p));
+    hp = gtk_entry_get_text(GTK_ENTRY(h));
+    amount = gtk_entry_get_text(GTK_ENTRY(a));
+
+    struct car temp[SIZE];
+    struct car *t = warehouse;
+    int j = 0;
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        char price1[24];
+        char hp1[24];
+        sprintf(price1, "%d", warehouse[i].price);
+        sprintf(hp1, "%d", warehouse[i].hp);
+
+        if (strcmp(warehouse[i].brand, brand) == 0 &&
+            strcmp(warehouse[i].model, model) == 0 &&
+            strcmp(warehouse[i].color, color) == 0 &&
+            strcmp(price1, price) == 0 &&
+            strcmp(hp1, hp) == 0)
+        {
+            warehouse[i].amount = 0;
+        }
+        else
+        {
+            temp[j] = warehouse[i];
+            j++;
+        }
+    }
+    position = 0;
+    for (int k = 0; k < SIZE; k++)
+    {
+        warehouse[k] = temp[k];
+        position++;
+    }
+    write_cars_to_file(filename, warehouse);
+    // load_cars_from_file(filename, warehouse);
+
+    char price1[24];
+    char hp1[24];
+    char amount1[24];
+    sprintf(price1, "%d", warehouse[0].price);
+    sprintf(hp1, "%d", warehouse[0].hp);
+    sprintf(amount1, "%d", warehouse[0].amount);
+
+    g_print("%s;%s;%s;%s;%s;%s;\n", warehouse[0].brand, warehouse[0].model, warehouse[0].color, price1, hp1, amount1);
+
+    gtk_entry_set_text(GTK_ENTRY(b), "");
+    gtk_entry_set_text(GTK_ENTRY(m), "");
+    gtk_entry_set_text(GTK_ENTRY(c), "");
+    gtk_entry_set_text(GTK_ENTRY(p), "1000");
+    gtk_entry_set_text(GTK_ENTRY(h), "10");
+    gtk_entry_set_text(GTK_ENTRY(a), "1");
 }
 
 static void find_car(GtkWidget *widget, gpointer data)
@@ -340,14 +419,31 @@ void add_car(GtkWidget *widget, gpointer data)
     {
         g_print("Error, cant input empty brand/model/color\n");
     }
-    else if (car_exists(brand, model, color))
+    else if (car_exists(brand, model, color, price, hp))
     {
-        g_print("Error, car already exists!\n");
+        int id = 0;
+        for (int i = 0; i < SIZE; i++)
+        {
+            char price1[24];
+            char hp1[24];
+            sprintf(price1, "%d", warehouse[i].price);
+            sprintf(hp1, "%d", warehouse[i].hp);
+
+            if (strcmp(warehouse[i].brand, brand) == 0 &&
+                strcmp(warehouse[i].model, model) == 0 &&
+                strcmp(warehouse[i].color, color) == 0 &&
+                strcmp(price1, price) == 0 &&
+                strcmp(hp1, hp) == 0)
+            {
+                warehouse[i].amount += atoi(amount);
+            }
+        }
+        write_cars_to_file(filename, warehouse);
     }
     else
     {
         fputs(text, fp);
-        position++;
+        
         // g_print("%d\n", position);
         struct car car1;
         strcpy(car1.brand, brand);
@@ -357,17 +453,26 @@ void add_car(GtkWidget *widget, gpointer data)
         car1.hp = atoi(hp);
         car1.amount = atoi(amount);
         warehouse[position] = car1;
+        position++;
     }
     fclose(fp);
 }
 
-static bool car_exists(const char *brand, const char *model, const char *color)
+static bool car_exists(const char *brand, const char *model,
+                       const char *color, const char *price, const char *hp)
 {
     for (int i = 0; i < SIZE; i++)
     {
+        char price1[24];
+        char hp1[24];
+        sprintf(price1, "%d", warehouse[i].price);
+        sprintf(hp1, "%d", warehouse[i].hp);
+
         if (strcmp(warehouse[i].brand, brand) == 0 &&
             strcmp(warehouse[i].model, model) == 0 &&
-            strcmp(warehouse[i].color, color) == 0)
+            strcmp(warehouse[i].color, color) == 0 &&
+            strcmp(price1, price) == 0 &&
+            strcmp(hp1, hp) == 0)
         {
             return 1;
         }
@@ -412,6 +517,47 @@ static void my_split(const char *source, char *brand, char *model, char *color, 
         *amount++ = *source++;
     }
     *amount = '\0';
+}
+
+static bool write_cars_to_file(const char *filename, struct car *warehouse)
+{
+    FILE *fp;
+    fp = fopen(filename, "w");
+    if (fp == NULL)
+    {
+        printf("No such file to read from\n");
+        return 0;
+    }
+    for (int i = 0; i < SIZE; i++)
+    {
+        char price1[24];
+        char hp1[24];
+        char amount1[24];
+        sprintf(price1, "%d", warehouse[i].price);
+        sprintf(hp1, "%d", warehouse[i].hp);
+        sprintf(amount1, "%d", warehouse[i].amount);
+
+        if (warehouse[i].amount > 0)
+        {
+            char text[1024] = "";
+            strcat(text, warehouse[i].brand);
+            strcat(text, ";");
+            strcat(text, warehouse[i].model);
+            strcat(text, ";");
+            strcat(text, warehouse[i].color);
+            strcat(text, ";");
+            strcat(text, price1);
+            strcat(text, ";");
+            strcat(text, hp1);
+            strcat(text, ";");
+            strcat(text, amount1);
+            strcat(text, ";");
+            strcat(text, "\n");
+            fputs(text, fp);
+        }
+    }
+    fclose(fp);
+    return 1;
 }
 
 static bool load_cars_from_file(const char *filename, struct car *warehouse)
