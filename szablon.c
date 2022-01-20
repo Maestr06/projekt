@@ -3,10 +3,11 @@
 #include <string.h>
 #define SIZE 255
 
-const char filename[] = "warehouse.txt";
+const char filename[] = "warehouse1.txt";
 
 int position = 0, count = 0, iter = 0;
 
+//sdfsdf
 struct car
 {
     char brand[SIZE];
