@@ -3,7 +3,7 @@
 #include <string.h>
 #define SIZE 255
 
-const char filename[] = "warehouse111.txt";
+const char filename[] = "warehouse.txt";
 
 int position = 0, count = 0, iter = 0;
 
