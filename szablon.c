@@ -440,7 +440,7 @@ void add_car(GtkWidget *widget, gpointer data)
     else
     {
         fputs(text, fp);
-        
+
         // g_print("%d\n", position);
         struct car car1;
         strcpy(car1.brand, brand);
