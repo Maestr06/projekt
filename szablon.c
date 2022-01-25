@@ -7,6 +7,7 @@ const char filename[] = "warehouse.txt";
 
 int position = 0, count = 0, iter = 0;
 
+//sdfsdf
 struct car
 {
     char brand[SIZE];
