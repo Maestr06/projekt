@@ -273,7 +273,7 @@ static void delete_car(GtkWidget *widget, gpointer data)
         position++;
     }
     write_cars_to_file(filename, warehouse);
-    // load_cars_from_file(filename, warehouse);
+    load_cars_from_file(filename, warehouse);
 
     char price1[24];
     char hp1[24];
@@ -568,7 +568,7 @@ static bool load_cars_from_file(const char *filename, struct car *warehouse)
     }
 
     char napis[SIZE];
-
+    position = 0;
     for (int i = 0; i < SIZE; i++)
     {
         //result = fgets (napis, SIZE, stdin);// czytamy ze standardowego wejścia
